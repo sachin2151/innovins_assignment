@@ -4,6 +4,7 @@ import 'package:innovins_assignment/core/routes.dart';
 import 'package:innovins_assignment/modules/home/presentation/controller/home_controller.dart';
 import 'package:innovins_assignment/modules/home/presentation/view/cart_view.dart';
 import 'package:innovins_assignment/modules/home/presentation/view/product_detail_view.dart';
+import 'package:innovins_assignment/modules/home/presentation/view/profile_view.dart';
 
 class HomePage extends GetView<HomeController> {
   const HomePage({super.key});
@@ -13,13 +14,13 @@ class HomePage extends GetView<HomeController> {
     List pages = [
       productListWidget(),
       const CartPage(),
-      productListWidget(),
+      const ProfilePage(),
     ];
     return Obx(() => Scaffold(
         backgroundColor: const Color.fromARGB(255, 239, 235, 235),
         extendBodyBehindAppBar: true,
         appBar: AppBar(
-          leading: InkWell(
+          leading: GestureDetector(
               onTap: () {
                 Get.back();
               },
@@ -82,8 +83,16 @@ class HomePage extends GetView<HomeController> {
                     height: 90,
                     margin: const EdgeInsets.only(left: 10),
                     padding: const EdgeInsets.fromLTRB(0, 20, 0, 20),
-                    child: const TextField(
-                      decoration: InputDecoration(
+                    child: TextField(
+                      onChanged: (value) {
+                        // controller.displayList.clear();
+                        controller.displayList.value = controller.productList
+                            .where((p0) => p0.name!
+                                .toLowerCase()
+                                .contains(value.toLowerCase()))
+                            .toList();
+                      },
+                      decoration: const InputDecoration(
                         filled: true,
                         fillColor: Colors.white,
                         labelText: 'Search',
@@ -104,11 +113,25 @@ class HomePage extends GetView<HomeController> {
                                 color: Colors.purple,
                               )),
                             )
-                          : Column(
-                              children: List.generate(
-                                  controller.productList.length,
-                                  (index) => showProductsCard(index)),
-                            ),
+                          : controller.displayList.isNotEmpty
+                              ? Column(
+                                  children: List.generate(
+                                      controller.displayList.length,
+                                      (index) => showProductsCard(index)),
+                                )
+                              : const Padding(
+                                  padding: EdgeInsets.only(top: 60),
+                                  child: Center(
+                                    child: Text(
+                                      " No Products available,\n Please add some",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.grey),
+                                    ),
+                                  ),
+                                ),
                     ),
                   )
                 ],
@@ -119,12 +142,12 @@ class HomePage extends GetView<HomeController> {
   }
 
   Widget showProductsCard(int index) {
-    return InkWell(
+    return GestureDetector(
       onTap: () {
         Get.toNamed(OneRoute.productDetailView,
             arguments: ProductDetailPageArguments(
-                data: controller.productList[index],
-                image: controller.imagesList[index]));
+                data: controller.displayList[index],
+                image: controller.displayList[index].image));
       },
       child: Container(
         padding: const EdgeInsets.only(bottom: 20),
@@ -136,7 +159,7 @@ class HomePage extends GetView<HomeController> {
               width: 150,
               decoration: BoxDecoration(
                   image: DecorationImage(
-                image: AssetImage(controller.imagesList[index]),
+                image: AssetImage(controller.displayList[index].image ?? ""),
               )),
             ),
             const SizedBox(
@@ -147,7 +170,7 @@ class HomePage extends GetView<HomeController> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  controller.productList[index].name ?? "",
+                  controller.displayList[index].name ?? "",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 20),
                 ),
@@ -155,7 +178,7 @@ class HomePage extends GetView<HomeController> {
                   height: 5,
                 ),
                 Text(
-                  "${controller.productList[index].price ?? ""} € / piece",
+                  "${controller.displayList[index].price ?? ""} € / piece",
                   style: const TextStyle(
                       fontWeight: FontWeight.bold, fontSize: 15),
                 ),
@@ -175,24 +198,34 @@ class HomePage extends GetView<HomeController> {
                     const SizedBox(
                       width: 20,
                     ),
-                    GestureDetector(
-                      onTap: () {
-                        controller.addItemsToCart(index);
-                      },
-                      child: Obx(
-                        () => Container(
-                          padding: const EdgeInsets.fromLTRB(20, 7, 20, 7),
-                          decoration: BoxDecoration(
-                              border: Border.all(width: 1),
-                              borderRadius: BorderRadius.circular(10),
-                              color:
-                                  controller.productList[index].isCart ?? false
-                                      ? Colors.green
-                                      : Colors.white),
-                          child: const Icon(Icons.shopping_cart_outlined),
+                    GestureDetector(onTap: () {
+                      controller.addItemsToCart(index);
+                    }, child: GetBuilder<HomeController>(builder: (controller) {
+                      return Container(
+                        padding: const EdgeInsets.fromLTRB(20, 7, 20, 7),
+                        decoration: BoxDecoration(
+                            border: Border.all(width: 1),
+                            borderRadius: BorderRadius.circular(10),
+                            color: controller.displayList[index].isCart ?? false
+                                ? Colors.green
+                                : Colors.white),
+                        child: const Icon(Icons.shopping_cart_outlined),
+                      );
+                    })
+                        //  Obx(
+                        //   () => Container(
+                        //     padding: const EdgeInsets.fromLTRB(20, 7, 20, 7),
+                        //     decoration: BoxDecoration(
+                        //         border: Border.all(width: 1),
+                        //         borderRadius: BorderRadius.circular(10),
+                        //         color:
+                        //             controller.productList[index].isCart ?? false
+                        //                 ? Colors.green
+                        //                 : Colors.white),
+                        //     child: const Icon(Icons.shopping_cart_outlined),
+                        //   ),
+                        // ),
                         ),
-                      ),
-                    ),
                   ],
                 )
               ],

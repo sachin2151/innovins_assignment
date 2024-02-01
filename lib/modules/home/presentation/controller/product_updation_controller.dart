@@ -1,8 +1,8 @@
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:innovins_assignment/core/http_error.dart';
 import 'package:innovins_assignment/core/storage_service.dart';
 import 'package:innovins_assignment/modules/home/data/models/product_list.dart';
@@ -11,6 +11,7 @@ import 'package:innovins_assignment/modules/home/domain/usecases/delete_product_
 import 'package:innovins_assignment/modules/home/domain/usecases/edit_prodcut_usecase.dart';
 import 'package:innovins_assignment/modules/home/domain/usecases/home_usecases.dart';
 import 'package:innovins_assignment/modules/onboarding/data/models/onboarding_model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ProductUpdationController extends GetxController {
   ProductUpdationController(
@@ -28,7 +29,7 @@ class ProductUpdationController extends GetxController {
   RxBool isAddProductApiLoading = false.obs;
   RxList<ProductListModel> productList = <ProductListModel>[].obs;
   DataModel onboardingModel = DataModel();
-  final pref = GetStorage();
+
   RxString userCode = "".obs;
 
   TextEditingController nameController = TextEditingController();
@@ -49,7 +50,8 @@ class ProductUpdationController extends GetxController {
   }
 
   Future<void> getUserInfo() async {
-    String customerDataString = pref.read(StorageKeys.keyUserData) ?? "";
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    String customerDataString = pref.getString(StorageKeys.keyUserData) ?? "";
     onboardingModel = customerDataString == ""
         ? DataModel()
         : DataModel.fromJson(jsonDecode(customerDataString));
@@ -59,19 +61,6 @@ class ProductUpdationController extends GetxController {
   List<String> imagesList = [
     'assets/images/img1.png',
     'assets/images/img2.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
-    'assets/images/img3.png',
     'assets/images/img3.png',
   ];
 
@@ -97,6 +86,9 @@ class ProductUpdationController extends GetxController {
       } else {}
     }, (r) async {
       productList.value = r;
+      for (var element in productList) {
+        element.image = imagesList[Random().nextInt(imagesList.length - 1)];
+      }
       clearFields();
       isApiLoading(false);
     });

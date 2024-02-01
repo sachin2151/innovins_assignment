@@ -3,12 +3,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:innovins_assignment/core/http_error.dart';
 import 'package:innovins_assignment/core/routes.dart';
 import 'package:innovins_assignment/core/storage_service.dart';
 import 'package:innovins_assignment/modules/onboarding/data/models/onboarding_model.dart';
 import 'package:innovins_assignment/modules/onboarding/domain/usecases/login_user_usecase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingController extends GetxController {
   OnboardingController(
@@ -24,7 +24,6 @@ class OnboardingController extends GetxController {
   final formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
   String emailErrorText = "";
-  final pref = GetStorage();
 
   @override
   void onInit() {
@@ -34,16 +33,16 @@ class OnboardingController extends GetxController {
   }
 
   getprefs() async {
-    final pref = GetStorage();
-    String customerDataString = pref.read(StorageKeys.keyUserData) ?? "";
+    final SharedPreferences pref = await SharedPreferences.getInstance();
+    String customerDataString = pref.getString(StorageKeys.keyUserData) ?? "";
 
     DataModel onboardingModel = customerDataString == ""
         ? DataModel()
         : DataModel.fromJson(jsonDecode(customerDataString));
-    log(customerDataString);
+    await Future.delayed(const Duration(seconds: 2));
     log(onboardingModel.userToken ?? "");
-    await Future.delayed(const Duration(seconds: 1));
-    if (onboardingModel.userToken?.isEmpty ?? false) {
+    if (onboardingModel.userToken?.isEmpty ??
+        false || onboardingModel.userToken == null) {
       loading(false);
     } else {
       Get.offAllNamed(OneRoute.productUpdateView);
@@ -85,15 +84,24 @@ class OnboardingController extends GetxController {
       isApiLoading(false);
       if (l is NoInternetError) {
       } else if (l is SlowInternetError) {
-      } else {}
+      } else {
+        Get.snackbar("Sorry", "User not registered",
+            colorText: Colors.red,
+            messageText: const Text(
+              "User not Registered",
+              style: TextStyle(fontWeight: FontWeight.w600, color: Colors.red),
+            ));
+      }
     }, (r) async {
-      isApiLoading(false);
+      final SharedPreferences pref = await SharedPreferences.getInstance();
+
       log(r.data?.userToken ?? "");
-      await pref.write(
+      await pref.setString(
         StorageKeys.keyUserData,
         jsonEncode(r.data),
       );
-      Get.toNamed(OneRoute.productUpdateView);
+      isApiLoading(false);
+      Get.offAllNamed(OneRoute.productUpdateView);
     });
   }
 }

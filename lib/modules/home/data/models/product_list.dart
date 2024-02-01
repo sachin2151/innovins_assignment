@@ -1,6 +1,7 @@
 class ProductListModel {
   String? id;
   String? name;
+  String? image;
   String? moq;
   String? price;
   String? discountedPrice;
@@ -10,6 +11,7 @@ class ProductListModel {
       {this.id,
       this.name,
       this.moq,
+      this.image,
       this.price,
       this.discountedPrice,
       this.isCart = false});
@@ -17,6 +19,7 @@ class ProductListModel {
   ProductListModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
     name = json['name'];
+    image = json['image'];
     moq = json['moq'];
     price = json['price'];
     discountedPrice = json['discounted_price'];
@@ -28,6 +31,7 @@ class ProductListModel {
     data['id'] = id;
     data['name'] = name;
     data['moq'] = moq;
+    data['image'] = image;
     data['price'] = price;
     data['cart'] = isCart;
     data['discounted_price'] = discountedPrice;

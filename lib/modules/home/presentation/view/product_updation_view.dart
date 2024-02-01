@@ -212,7 +212,7 @@ class ProductUpdationPage extends GetView<ProductUpdationController> {
             width: 150,
             decoration: BoxDecoration(
                 image: DecorationImage(
-              image: AssetImage(controller.imagesList[index]),
+              image: AssetImage(controller.productList[index].image ?? ""),
             )),
           ),
           const SizedBox(

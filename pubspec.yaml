@@ -40,6 +40,7 @@ dependencies:
   dio: ^5.4.0
   internet_connection_checker: ^1.0.0+1
   get_storage: ^2.1.1
+  shared_preferences: ^2.2.2
 
 dev_dependencies:
   flutter_test:

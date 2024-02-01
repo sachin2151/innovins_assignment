@@ -2,11 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:innovins_assignment/core/http_error.dart';
 import 'package:innovins_assignment/core/routes.dart';
 import 'package:innovins_assignment/core/storage_service.dart';
 import 'package:innovins_assignment/modules/onboarding/domain/usecases/register_user_usecase.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class RegistrationController extends GetxController {
   RegistrationController(
@@ -19,7 +19,6 @@ class RegistrationController extends GetxController {
   String name = "";
   String number = "";
   RxBool isApiLoading = false.obs;
-  final pref = GetStorage();
 
   final formKey = GlobalKey<FormState>();
   TextEditingController emailController = TextEditingController();
@@ -63,7 +62,8 @@ class RegistrationController extends GetxController {
       } else if (l is SlowInternetError) {
       } else {}
     }, (r) async {
-      await pref.write(
+      final SharedPreferences pref = await SharedPreferences.getInstance();
+      await pref.setString(
         StorageKeys.keyUserData,
         jsonEncode(r.data),
       );
